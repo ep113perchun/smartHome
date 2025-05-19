@@ -1,0 +1,17 @@
+jwt:
+  expiration: 86400000
+spring:
+  application:
+    name: smartHome
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5436/smartHome
+    hikari:
+      username: pgUser
+      password: 24081499
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+server:
+  port: 8085

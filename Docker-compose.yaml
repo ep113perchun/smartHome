@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: PLpgSQL
+    restart: always
+    environment:
+      POSTGRES_USER: pgUser
+      POSTGRES_PASSWORD: 24081499
+      POSTGRES_DB: smartHome
+    ports:
+      - "5436:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pg_data:
