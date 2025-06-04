@@ -1,4 +1,4 @@
-package pe.app.smartHome.dto;
+package pe.app.smartHome.dto.apiDto;
 
 import lombok.Data;
 

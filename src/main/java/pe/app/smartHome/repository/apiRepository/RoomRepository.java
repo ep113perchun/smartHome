@@ -1,11 +1,12 @@
 package pe.app.smartHome.repository.apiRepository;
 
-import pe.app.smartHome.dto.*;
-
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pe.app.smartHome.dto.apiDto.DeviceDTO;
+import pe.app.smartHome.dto.apiDto.RoomDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,31 +17,30 @@ public class RoomRepository {
     private static final Logger logger = LoggerFactory.getLogger(RoomRepository.class);
     private final JdbcTemplate jdbcTemplate;
     private final DeviceRepository deviceRepository;
+    private final RowMapper<RoomDTO> roomRowMapper;
 
     public RoomRepository(JdbcTemplate jdbcTemplate, DeviceRepository deviceRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.deviceRepository = deviceRepository;
+        this.roomRowMapper = (rs, rowNum) -> {
+            RoomDTO room = new RoomDTO();
+            room.setId(rs.getString("id"));
+            room.setName(rs.getString("name"));
+            room.setColor(rs.getString("color"));
+            return room;
+        };
     }
 
-    public List<RoomDTO> findAll() {
-        logger.info("Получение списка всех комнат");
-        List<RoomDTO> rooms = jdbcTemplate.query(
-                "SELECT * FROM rooms",
-                (rs, rowNum) -> {
-                    RoomDTO room = new RoomDTO();
-                    room.setId(rs.getString("id"));
-                    room.setName(rs.getString("name"));
-                    room.setColor(rs.getString("color"));
-                    return room;
-                }
-        );
-
-        // Получаем устройства для каждой комнаты
-        for (RoomDTO room : rooms) {
-            room.setDevices(deviceRepository.findByRoomId(room.getId()));
-        }
-
-        logger.info("Найдено комнат: {}", rooms.size());
+    public List<RoomDTO> findByUser(String username) {
+        logger.info("Поиск комнат пользователя: {}", username);
+        String sql = """
+            SELECT r.* FROM rooms r
+            INNER JOIN users u ON r.user_id = u.id
+            WHERE u.username = ?
+            """;
+            
+        List<RoomDTO> rooms = jdbcTemplate.query(sql, roomRowMapper, username);
+        logger.info("Найдено комнат у пользователя {}: {}", username, rooms.size());
         return rooms;
     }
 
@@ -48,13 +48,7 @@ public class RoomRepository {
         logger.info("Поиск комнаты по ID: {}", id);
         List<RoomDTO> rooms = jdbcTemplate.query(
                 "SELECT * FROM rooms WHERE id = ?",
-                (rs, rowNum) -> {
-                    RoomDTO room = new RoomDTO();
-                    room.setId(rs.getString("id"));
-                    room.setName(rs.getString("name"));
-                    room.setColor(rs.getString("color"));
-                    return room;
-                },
+                roomRowMapper,
                 id
         );
 
@@ -69,12 +63,15 @@ public class RoomRepository {
         return Optional.empty();
     }
 
-    public RoomDTO create(RoomDTO room) {
-        logger.info("Создание новой комнаты: {}", room);
+    public RoomDTO create(RoomDTO room, Long userId) {
+        logger.info("Создание комнаты для пользователя {}", userId);
         String id = UUID.randomUUID().toString();
         jdbcTemplate.update(
-                "INSERT INTO rooms (id, name, color) VALUES (?, ?, ?)",
-                id, room.getName(), room.getColor()
+                "INSERT INTO rooms (id, name, color, user_id) VALUES (?, ?, ?, ?)",
+                id,
+                room.getName(),
+                room.getColor(),
+                userId
         );
         room.setId(id);
         logger.info("Комната создана с ID: {}", id);

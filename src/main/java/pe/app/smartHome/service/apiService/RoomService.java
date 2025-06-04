@@ -1,8 +1,13 @@
 package pe.app.smartHome.service.apiService;
 
 import org.springframework.transaction.annotation.Transactional;
-import pe.app.smartHome.dto.*;
-import pe.app.smartHome.repository.apiRepository.*;
+import pe.app.smartHome.dto.apiDto.CreateRoomRequestDTO;
+import pe.app.smartHome.dto.apiDto.RoomDTO;
+import pe.app.smartHome.dto.apiDto.UpdateRoomRequestDTO;
+import pe.app.smartHome.repository.apiRepository.RoomRepository;
+import pe.app.smartHome.repository.apiRepository.DeviceRepository;
+import pe.app.smartHome.repository.securityRepository.UserRepository;
+import pe.app.smartHome.entity.User;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,14 +18,21 @@ import java.util.UUID;
 public class RoomService {
     private final RoomRepository roomRepository;
     private final DeviceRepository deviceRepository;
+    private final UserRepository userRepository;
 
-    public RoomService(RoomRepository roomRepository, DeviceRepository deviceRepository) {
+    public RoomService(RoomRepository roomRepository, DeviceRepository deviceRepository, UserRepository userRepository) {
         this.roomRepository = roomRepository;
         this.deviceRepository = deviceRepository;
+        this.userRepository = userRepository;
     }
 
-    public List<RoomDTO> getAllRooms() {
-        return roomRepository.findAll();
+    public List<RoomDTO> getRoomsByUsername(String username) {
+        List<RoomDTO> rooms = roomRepository.findByUser(username);
+        // Получаем устройства для каждой комнаты
+        for (RoomDTO room : rooms) {
+            room.setDevices(deviceRepository.findByRoomId(room.getId()));
+        }
+        return rooms;
     }
 
     public RoomDTO getRoomById(String id) {
@@ -29,14 +41,18 @@ public class RoomService {
     }
 
     @Transactional
-    public RoomDTO createRoom(CreateRoomRequestDTO request) {
+    public RoomDTO createRoom(CreateRoomRequestDTO request, String username) {
+        // Получаем пользователя
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
         RoomDTO room = new RoomDTO();
         room.setId(UUID.randomUUID().toString());
         room.setName(request.getName());
         room.setColor(request.getColor());
 
         // Создаем комнату
-        RoomDTO createdRoom = roomRepository.create(room);
+        RoomDTO createdRoom = roomRepository.create(room, user.getId());
 
         // Обновляем room_id для выбранных устройств
         if (request.getDeviceIds() != null && !request.getDeviceIds().isEmpty()) {

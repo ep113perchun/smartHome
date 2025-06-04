@@ -1,8 +1,14 @@
 package pe.app.smartHome.service.apiService;
 
 import org.springframework.stereotype.Service;
-import pe.app.smartHome.dto.*;
-import pe.app.smartHome.repository.apiRepository.*;
+import org.springframework.transaction.annotation.Transactional;
+import pe.app.smartHome.dto.apiDto.CreateScenarioRequestDTO;
+import pe.app.smartHome.dto.apiDto.DeviceDTO;
+import pe.app.smartHome.dto.apiDto.ScenarioDTO;
+import pe.app.smartHome.dto.apiDto.UpdateScenarioRequestDTO;
+import pe.app.smartHome.repository.apiRepository.ScenarioRepository;
+import pe.app.smartHome.repository.securityRepository.UserRepository;
+import pe.app.smartHome.entity.User;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,14 +18,16 @@ import java.util.stream.Collectors;
 public class ScenarioService {
     private final ScenarioRepository scenarioRepository;
     private final DeviceService deviceService;
+    private final UserRepository userRepository;
 
-    public ScenarioService(ScenarioRepository scenarioRepository, DeviceService deviceService) {
+    public ScenarioService(ScenarioRepository scenarioRepository, DeviceService deviceService, UserRepository userRepository) {
         this.scenarioRepository = scenarioRepository;
         this.deviceService = deviceService;
+        this.userRepository = userRepository;
     }
 
-    public List<ScenarioDTO> getAllScenarios() {
-        return scenarioRepository.findAll();
+    public List<ScenarioDTO> getScenariosByUsername(String username) {
+        return scenarioRepository.findByUser(username);
     }
 
     public ScenarioDTO getScenarioById(String id) {
@@ -27,7 +35,12 @@ public class ScenarioService {
                 .orElseThrow(() -> new RuntimeException("Сценарий не найден"));
     }
 
-    public ScenarioDTO createScenario(CreateScenarioRequestDTO request) {
+    @Transactional
+    public ScenarioDTO createScenario(CreateScenarioRequestDTO request, String username) {
+        // Получаем пользователя
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
         ScenarioDTO scenario = new ScenarioDTO();
         scenario.setId(UUID.randomUUID().toString());
         scenario.setName(request.getName());
@@ -43,7 +56,7 @@ public class ScenarioService {
             scenario.setDevices(devices);
         }
 
-        return scenarioRepository.create(scenario);
+        return scenarioRepository.create(scenario, user.getId());
     }
 
     public ScenarioDTO updateScenario(String id, UpdateScenarioRequestDTO request) {

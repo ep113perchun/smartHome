@@ -1,9 +1,12 @@
 package pe.app.smartHome.repository.apiRepository;
 
-import pe.app.smartHome.dto.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pe.app.smartHome.dto.apiDto.DeviceDTO;
+import pe.app.smartHome.dto.apiDto.ScenarioDTO;
 import pe.app.smartHome.service.apiService.DeviceService;
 
 import java.util.List;
@@ -12,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Repository
 public class ScenarioRepository {
+    private static final Logger logger = LoggerFactory.getLogger(ScenarioRepository.class);
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<ScenarioDTO> scenarioRowMapper;
     private final DeviceService deviceService;
@@ -39,8 +43,17 @@ public class ScenarioRepository {
         };
     }
 
-    public List<ScenarioDTO> findAll() {
-        return jdbcTemplate.query("SELECT * FROM scenarios", scenarioRowMapper);
+    public List<ScenarioDTO> findByUser(String username) {
+        logger.info("Поиск сценариев пользователя: {}", username);
+        String sql = """
+            SELECT s.* FROM scenarios s
+            INNER JOIN users u ON s.user_id = u.id
+            WHERE u.username = ?
+            """;////
+            
+        List<ScenarioDTO> scenarios = jdbcTemplate.query(sql, scenarioRowMapper, username);
+        logger.info("Найдено сценариев у пользователя {}: {}", username, scenarios.size());
+        return scenarios;
     }
 
     public Optional<ScenarioDTO> findById(String id) {
@@ -52,12 +65,18 @@ public class ScenarioRepository {
         return scenarios.isEmpty() ? Optional.empty() : Optional.of(scenarios.get(0));
     }
 
-    public ScenarioDTO create(ScenarioDTO scenario) {
+    public ScenarioDTO create(ScenarioDTO scenario, Long userId) {
+        logger.info("Создание сценария для пользователя {}", userId);
         jdbcTemplate.update(
-                "INSERT INTO scenarios (id, name, description, color, is_active) VALUES (?, ?, ?, ?, ?)",
-                scenario.getId(), scenario.getName(), scenario.getDescription(),
-                scenario.getColor(), scenario.isActive()
+                "INSERT INTO scenarios (id, name, description, color, is_active, user_id) VALUES (?, ?, ?, ?, ?, ?)",
+                scenario.getId(),
+                scenario.getName(),
+                scenario.getDescription(),
+                scenario.getColor(),
+                scenario.isActive(),
+                userId
         );
+        logger.info("Сценарий успешно создан");
 
         // Сохраняем связи с устройствами
         if (scenario.getDevices() != null) {
@@ -73,10 +92,16 @@ public class ScenarioRepository {
     }
 
     public void update(String id, ScenarioDTO scenario) {
+        logger.info("Обновление сценария {}", id);
         jdbcTemplate.update(
-                "UPDATE scenarios SET name = ?, description = ?, color = ? WHERE id = ?",
-                scenario.getName(), scenario.getDescription(), scenario.getColor(), id
+                "UPDATE scenarios SET name = ?, description = ?, color = ?, is_active = ? WHERE id = ?",
+                scenario.getName(),
+                scenario.getDescription(),
+                scenario.getColor(),
+                scenario.isActive(),
+                id
         );
+        logger.info("Сценарий успешно обновлен");
 
         // Обновляем связи с устройствами
         jdbcTemplate.update("DELETE FROM scenario_devices WHERE scenario_id = ?", id);
@@ -91,7 +116,9 @@ public class ScenarioRepository {
     }
 
     public void delete(String id) {
+        logger.info("Удаление сценария {}", id);
         jdbcTemplate.update("DELETE FROM scenarios WHERE id = ?", id);
+        logger.info("Сценарий успешно удален");
     }
 
     private List<String> getScenarioDevices(String scenarioId) {

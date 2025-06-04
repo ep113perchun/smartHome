@@ -1,5 +1,3 @@
-jwt:
-  expiration: 86400000
 spring:
   application:
     name: smartHome
@@ -11,7 +9,14 @@ spring:
       password: 24081499
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
+    open-in-view: true
+
+security:
+  jwt:
+    secret_key: a99e49f0a2a87247767d8cd764bbaf874b8a09306fe10987b9865134d845aab5ae735076e0e104f1e83e86e69aec6aba3f5a5dd69279073221f647ac03b00417bf6ccab8adc4ad38bad92b4037f347876a0987aa305f28df2cd8f247eed0d1723c866deb825bc50ca8cab67679e8acb3aadaced195efaa9121365ed03aa2b63c8936cc1fc0495c99954eacf8ee4ba690d78876273670e3fca6d0e1db83459731d14f06aed1f1db7b96d9489647f3afaf1bc150233b7100a863b173628c08e89632230d7726fc39b4e4491d775599f2f29ded9e704f81ae0122b4dffc2262c3b134d5ad752a5a6b762e6b9b95c54bf9e3b56dde2dde88f846c4815dd9cae0e36a
+    access_token_expiration: 36000000 # 10 hours
+    refresh_token_expiration: 252000000 # 7 days
 
 server:
   port: 8085
