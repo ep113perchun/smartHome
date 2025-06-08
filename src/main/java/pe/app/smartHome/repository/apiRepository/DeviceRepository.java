@@ -30,6 +30,12 @@ public class DeviceRepository {
             device.setName(rs.getString("name"));
             device.setStatus(rs.getBoolean("status"));
             device.setType(rs.getString("type"));
+            
+            // Проверяем relay_id на null
+            int relayId = rs.getInt("relay_id");
+            device.setRelayId(rs.wasNull() ? null : relayId);
+            
+            device.setMac(rs.getString("mac"));
 
             java.sql.Timestamp timestamp = rs.getTimestamp("last_update");
             if (timestamp != null) {
@@ -206,5 +212,16 @@ public class DeviceRepository {
         
         logger.info("Найдено {} пользователей с доступом к устройствам", result.size());
         return result;
+    }
+
+    public List<DeviceDTO> findByMac(String mac) {
+        logger.info("Поиск устройств по MAC-адресу: {}", mac);
+        List<DeviceDTO> devices = jdbcTemplate.query(
+                "SELECT * FROM devices WHERE mac = ?",
+                deviceRowMapper,
+                mac
+        );
+        logger.info("Найдено устройств с MAC {}: {}", mac, devices.size());
+        return devices;
     }
 }

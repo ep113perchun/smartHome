@@ -58,7 +58,6 @@ public class RoomRepository {
             logger.info("Комната найдена: {}", room);
             return Optional.of(room);
         }
-
         logger.info("Комната не найдена");
         return Optional.empty();
     }

@@ -207,7 +207,7 @@ public class SmartHomeController {
     //// ---- ADMIN ---- ////
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/devices")
+    @PostMapping("/admin/devices")
     public ResponseEntity<DeviceDTO> createDevice(@RequestBody CreateDeviceRequestDTO deviceData) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -217,7 +217,7 @@ public class SmartHomeController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/devices/{deviceId}")
+    @DeleteMapping("/admin/devices/{deviceId}")
     public ResponseEntity<DeleteResponseDTO> deleteDevice(@PathVariable String deviceId) {
         logger.info("Удаление устройства: {}", deviceId);
         deviceService.deleteDevice(deviceId);
@@ -229,14 +229,14 @@ public class SmartHomeController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/users")
+    @GetMapping("/admin/users")
     public ResponseEntity<List<String>> getAllUsernames() {
         logger.info("Получение списка всех пользователей");
         return ResponseEntity.ok(deviceService.getAllUsernames());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/devices/access")
+    @PostMapping("/admin/devices/access")
     public ResponseEntity<DeleteResponseDTO> grantDeviceAccess(@RequestBody GrantDeviceAccessRequestDTO request) {
         logger.info("Выдача доступа к устройству {} пользователям: {}", request.getDeviceId(), request.getUsernames());
         deviceService.grantAccessToUsers(request.getDeviceId(), request.getUsernames());
@@ -248,7 +248,7 @@ public class SmartHomeController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/devices/access")
+    @GetMapping("/admin/devices/access")
     public ResponseEntity<Map<String, List<String>>> getUserDeviceAccess() {
         logger.info("Получение списка доступа пользователей к устройствам");
         return ResponseEntity.ok(deviceService.getUserDeviceAccess());
