@@ -31,7 +31,6 @@ public class DeviceRepository {
             device.setStatus(rs.getBoolean("status"));
             device.setType(rs.getString("type"));
             
-            // Проверяем relay_id на null
             int relayId = rs.getInt("relay_id");
             device.setRelayId(rs.wasNull() ? null : relayId);
             
@@ -50,8 +49,7 @@ public class DeviceRepository {
     }
 
     public List<DeviceDTO> findAll() {
-        List<DeviceDTO> devices = jdbcTemplate.query("SELECT * FROM devices", deviceRowMapper);
-        return devices;
+        return jdbcTemplate.query("SELECT * FROM devices", deviceRowMapper);
     }
 
     public List<DeviceDTO> findByUser(String username) {
@@ -142,9 +140,7 @@ public class DeviceRepository {
 
     public void delete(String id) {
         logger.info("Удаление устройства: {}", id);
-        // Сначала удаляем связи с пользователями
         jdbcTemplate.update("DELETE FROM user_devices WHERE device_id = ?", id);
-        // Затем удаляем само устройство
         jdbcTemplate.update("DELETE FROM devices WHERE id = ?", id);
         logger.info("Устройство успешно удалено");
     }
@@ -157,7 +153,6 @@ public class DeviceRepository {
     public void grantAccessToUsers(String deviceId, List<String> usernames) {
         logger.info("Выдача доступа к устройству {} пользователям: {}", deviceId, usernames);
         
-        // Получаем ID пользователей по их username
         String sql = "SELECT id FROM users WHERE username = ?";
         
         for (String username : usernames) {
@@ -165,7 +160,6 @@ public class DeviceRepository {
             if (!userIds.isEmpty()) {
                 Long userId = userIds.get(0);
                 try {
-                    // Проверяем, существует ли уже такая связь
                     List<String> existingDevices = jdbcTemplate.queryForList(
                             "SELECT device_id FROM user_devices WHERE user_id = ? AND device_id = ?",
                             String.class,

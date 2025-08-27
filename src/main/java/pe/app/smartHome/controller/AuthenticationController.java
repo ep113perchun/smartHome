@@ -31,11 +31,11 @@ public class AuthenticationController {
             @RequestBody RegistrationRequestDto registrationDto) {
 
         if(userService.existsByUsername(registrationDto.getUsername())) {
-            return ResponseEntity.badRequest().build(); //имя уже занято
+            return ResponseEntity.badRequest().build();
         }
 
         if(userService.existsByEmail(registrationDto.getEmail())) {
-            return ResponseEntity.badRequest().build(); //почта уже занята
+            return ResponseEntity.badRequest().build();
         }
 
         authenticationService.register(registrationDto);

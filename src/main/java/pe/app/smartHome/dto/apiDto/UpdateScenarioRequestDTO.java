@@ -11,4 +11,3 @@ public class UpdateScenarioRequestDTO {
     private String color;
     private List<String> deviceIds;
 }
-// TODO: дублируется с create

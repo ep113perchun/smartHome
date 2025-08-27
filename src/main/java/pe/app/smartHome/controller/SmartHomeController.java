@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*") // В продакшене заменить на конкретный домен
+@CrossOrigin(origins = "*")
 public class SmartHomeController {
     private final DeviceService deviceService;
     private final RoomService roomService;
@@ -36,6 +36,8 @@ public class SmartHomeController {
         this.scenarioService = scenarioService;
         this.espService = espService;
     }
+
+    //// ---- DEVICE ---- ////
 
     /**
      * Запрос всех устройств
@@ -83,9 +85,8 @@ public class SmartHomeController {
         return ResponseEntity.ok(deviceService.updateDeviceStatus(deviceId, request));
     }
 
-    /**
-     *   // КОМНАТЫ //
-     */
+
+    //// ---- ROOM ---- ////
 
     /**
      * Запрос всех комнат
@@ -158,10 +159,12 @@ public class SmartHomeController {
         return ResponseEntity.ok(response);
     }
 
-    // Сценарии
+    //// ---- SCENARIOS ---- ////
 
     /**
-     * @return
+     * Запрос всех сценариев
+     *
+     * @return 200
      */
     @GetMapping("/scenarios")
     public ResponseEntity<List<ScenarioDTO>> getScenarios() {
@@ -174,11 +177,23 @@ public class SmartHomeController {
         return ResponseEntity.ok(scenarios);
     }
 
+    /**
+     * Запрос сценария по id
+     *
+     * @param scenarioId
+     * @return 200
+     */
     @GetMapping("/scenarios/{scenarioId}")
     public ResponseEntity<ScenarioDTO> getScenarioById(@PathVariable String scenarioId) {
         return ResponseEntity.ok(scenarioService.getScenarioById(scenarioId));
     }
 
+    /**
+     * Cоздание сценария
+     *
+     * @param scenarioData
+     * @return 200
+     */
     @PostMapping("/scenarios")
     public ResponseEntity<ScenarioDTO> createScenario(@RequestBody CreateScenarioRequestDTO scenarioData) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -188,6 +203,13 @@ public class SmartHomeController {
         return ResponseEntity.ok(scenarioService.createScenario(scenarioData, username));
     }
 
+    /**
+     * Обновление сценария
+     *
+     * @param scenarioId
+     * @param scenarioData
+     * @return 200
+     */
     @PutMapping("/scenarios/{scenarioId}")
     public ResponseEntity<ScenarioDTO> updateScenario(
             @PathVariable String scenarioId,
@@ -195,6 +217,12 @@ public class SmartHomeController {
         return ResponseEntity.ok(scenarioService.updateScenario(scenarioId, scenarioData));
     }
 
+    /**
+     * Удаление сценария
+     *
+     * @param scenarioId
+     * @return 200
+     */
     @DeleteMapping("/scenarios/{scenarioId}")
     public ResponseEntity<DeleteResponseDTO> deleteScenario(@PathVariable String scenarioId) {
         scenarioService.deleteScenario(scenarioId);

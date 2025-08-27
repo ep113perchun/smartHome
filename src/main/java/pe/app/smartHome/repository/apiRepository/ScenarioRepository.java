@@ -18,11 +18,9 @@ public class ScenarioRepository {
     private static final Logger logger = LoggerFactory.getLogger(ScenarioRepository.class);
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<ScenarioDTO> scenarioRowMapper;
-    private final DeviceService deviceService;
 
     public ScenarioRepository(JdbcTemplate jdbcTemplate, DeviceService deviceService) {
         this.jdbcTemplate = jdbcTemplate;
-        this.deviceService = deviceService;
         this.scenarioRowMapper = (rs, rowNum) -> {
             ScenarioDTO scenario = new ScenarioDTO();
             scenario.setId(rs.getString("id"));
@@ -31,9 +29,7 @@ public class ScenarioRepository {
             scenario.setColor(rs.getString("color"));
             scenario.setActive(rs.getBoolean("is_active"));
 
-            // Получаем ID устройств
             List<String> deviceIds = getScenarioDevices(scenario.getId());
-            // Преобразуем ID в объекты DeviceDTO
             List<DeviceDTO> devices = deviceIds.stream()
                     .map(deviceService::getDeviceById)
                     .collect(Collectors.toList());
@@ -49,7 +45,7 @@ public class ScenarioRepository {
             SELECT s.* FROM scenarios s
             INNER JOIN users u ON s.user_id = u.id
             WHERE u.username = ?
-            """;////
+            """;
             
         List<ScenarioDTO> scenarios = jdbcTemplate.query(sql, scenarioRowMapper, username);
         logger.info("Найдено сценариев у пользователя {}: {}", username, scenarios.size());
@@ -78,7 +74,6 @@ public class ScenarioRepository {
         );
         logger.info("Сценарий успешно создан");
 
-        // Сохраняем связи с устройствами
         if (scenario.getDevices() != null) {
             for (DeviceDTO device : scenario.getDevices()) {
                 jdbcTemplate.update(
@@ -103,7 +98,6 @@ public class ScenarioRepository {
         );
         logger.info("Сценарий успешно обновлен");
 
-        // Обновляем связи с устройствами
         jdbcTemplate.update("DELETE FROM scenario_devices WHERE scenario_id = ?", id);
         if (scenario.getDevices() != null) {
             for (DeviceDTO device : scenario.getDevices()) {

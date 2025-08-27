@@ -12,10 +12,32 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser"]
+      test: ["CMD-SHELL", "pg_isready -U pgUser"]
       interval: 10s
       retries: 5
       start_period: 10s
+    networks:
+      - smart_home_network
+
+  smart_home_app:
+    build: .
+    container_name: smart_home_app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smartHome
+      SPRING_DATASOURCE_USERNAME: pgUser
+      SPRING_DATASOURCE_PASSWORD: 24081499
+    ports:
+      - "8085:8085"
+    networks:
+      - smart_home_network
+
+networks:
+  smart_home_network:
+    driver: bridge
 
 volumes:
   pg_data:

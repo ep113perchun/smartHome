@@ -3,10 +3,10 @@ spring:
     name: smartHome
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5436/smartHome
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5436/smartHome}
     hikari:
-      username: pgUser
-      password: 24081499
+      username: ${SPRING_DATASOURCE_USERNAME:pgUser}
+      password: ${SPRING_DATASOURCE_PASSWORD:24081499}
   jpa:
     hibernate:
       ddl-auto: update

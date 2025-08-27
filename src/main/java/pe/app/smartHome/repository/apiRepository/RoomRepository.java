@@ -80,21 +80,17 @@ public class RoomRepository {
     public RoomDTO update(String id, RoomDTO room) {
         logger.info("Обновление комнаты {}: {}", id, room);
 
-        // Обновляем основные данные комнаты
         jdbcTemplate.update(
                 "UPDATE rooms SET name = ?, color = ? WHERE id = ?",
                 room.getName(), room.getColor(), id
         );
 
-        // Обновляем список устройств
         if (room.getDevices() != null) {
-            // Сначала очищаем текущие связи
             jdbcTemplate.update(
                     "UPDATE devices SET room_id = NULL WHERE room_id = ?",
                     id
             );
 
-            // Затем устанавливаем новые связи
             if (!room.getDevices().isEmpty()) {
                 String sql = "UPDATE devices SET room_id = ? WHERE id = ?";
                 for (DeviceDTO device : room.getDevices()) {
