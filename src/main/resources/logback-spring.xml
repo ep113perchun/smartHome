@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Загружаем стандартные настройки Spring Boot -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <!-- Загружаем настройки Spring Boot для консоли -->
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <!-- Имя приложения для тегов в логах -->
+    <property name="APP_NAME" value="smart-home-backend" />
+
+    <!-- Аппендер для Logstash (отправка по сети) -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <!-- Укажите адрес и порт вашего Logstash -->
+        <!-- 'your-logstash-server' замените на localhost для разработки -->
+        <destination>localhost:5001</destination>
+
+        <!-- Кодировщик, который преобразует логи в JSON -->
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Добавляем кастомные поля для удобства фильтрации в Kibana -->
+            <customFields>{"smSERVER": "${APP_NAME}"}</customFields>
+        </encoder>
+
+        <!-- Политика повтора при ошибках подключения -->
+        <connectionStrategy>
+            <roundRobin>
+                <connectionTimeout>5000</connectionTimeout>
+                <queueSize>1048576</queueSize>
+            </roundRobin>
+        </connectionStrategy>
+
+        <!-- Дожидаемся подключения к Logstash перед началом работы -->
+        <waitForConnection>true</waitForConnection>
+    </appender>
+
+    <!-- Корневой уровень логирования -->
+    <!-- Убедитесь, что здесь есть ссылка на LOGSTASH аппендер -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/> <!-- Стандартный консольный аппендер от Spring -->
+        <appender-ref ref="LOGSTASH"/> <!-- Наш новый аппендер для Logstash -->
+    </root>
+
+    <!-- Пример: можно повысить детализацию логирования для ваших пакетов -->
+    <logger name="com.yourpackage.smarthome" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="LOGSTASH"/>
+    </logger>
+
+</configuration>
