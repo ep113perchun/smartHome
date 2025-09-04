@@ -27,6 +27,17 @@
 *   **🐳 Контейнеризация:** Готовность к развертыванию через Docker Compose.
 
 ---
+<img width="1652" height="1400" alt="CleanShot 2025-09-04 at 18 42 25@2x" src="https://github.com/user-attachments/assets/d7dee734-df2e-40f3-8eb5-e007fd39125a" />
+
+<img width="1944" height="1622" alt="CleanShot 2025-09-04 at 18 44 10@2x" src="https://github.com/user-attachments/assets/f70f3c83-91fc-4ead-838f-6776245d9589" />
+
+<img width="1950" height="1514" alt="CleanShot 2025-09-04 at 18 44 40@2x" src="https://github.com/user-attachments/assets/6bbe6d90-bf78-47b8-a15a-fe40414fc780" />
+
+ <img width="1618" height="1760" alt="CleanShot 2025-09-04 at 18 45 13@2x" src="https://github.com/user-attachments/assets/e2de46da-3d2e-470c-8edd-ba1f8beb5575" />
+
+<img width="1594" height="1776" alt="CleanShot 2025-09-04 at 18 45 44@2x" src="https://github.com/user-attachments/assets/bd32a13c-3ac1-4269-9661-3b538eded250" />
+
+---
 
 ## 🗄️ Структура базы данных (основные сущности)
 
